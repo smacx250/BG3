@@ -1,0 +1,74 @@
+# Baldur's Gate 3 PAK format, version 18.  Only for files <= 4GB.
+# script for QuickBMS http://quickbms.aluigi.org
+set DEBUG = 0
+set EXTRACT = 0
+
+comtype lz4
+idstring "LSPK"
+get VERSION long
+
+if DEBUG == 1
+  print "VERSION = %VERSION|x%"
+endif
+
+get TABLE_OFF long
+if DEBUG == 1
+  print "TABLE_OFF = %TABLE_OFF|x%"
+endif
+
+goto TABLE_OFF
+get FILES long 
+get TABLE_ZSIZE long
+savepos TABLE_OFFSET
+
+math TABLE_SIZE = FILES
+math TABLE_SIZE *= 272
+
+if DEBUG == 1
+  clog "table.bin"  TABLE_OFFSET TABLE_ZSIZE TABLE_SIZE
+endif
+clog MEMORY_FILE TABLE_OFFSET TABLE_ZSIZE TABLE_SIZE
+
+for i = 0 < FILES
+    getdstring NAME 256 MEMORY_FILE
+
+    get OFFSET long MEMORY_FILE
+    if DEBUG == 1
+      print "FILE OFFSET = %OFFSET|x%"
+    endif
+
+    get CMPTYPE long MEMORY_FILE
+
+    get ZSIZE long MEMORY_FILE
+    if DEBUG == 1
+      print "FILE ZSIZE = %ZSIZE|x%"
+    endif
+    
+    get SIZE long MEMORY_FILE
+    if DEBUG == 1
+      print "FILE SIZE = %SIZE|x%"
+    endif
+
+    if EXTRACT == 1
+      if SIZE == 0
+          log NAME OFFSET ZSIZE
+      else
+          clog NAME OFFSET ZSIZE SIZE
+      endif
+    endif
+
+    if NAME & "meta.lsx"
+       if SIZE == 0
+          log MEMORY_FILE2 OFFSET ZSIZE
+          goto 0 MEMORY_FILE2
+          getdstring CONTENTS ZSIZE MEMORY_FILE2
+       else
+          clog MEMORY_FILE2 OFFSET ZSIZE SIZE
+          goto 0 MEMORY_FILE2
+          getdstring CONTENTS SIZE MEMORY_FILE2
+       endif
+       print "%CONTENTS%"
+    endif
+
+next i
+
