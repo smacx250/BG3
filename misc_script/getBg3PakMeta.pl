@@ -149,18 +149,28 @@ else {
 if ($debug > 0) {
   print("\nmeta.lsx:\n$ucFile\n\n");
 }
+
+print('For "Mods" Section:', "\n");
+print('<node id="ModuleShortDesc">', "\n");
 my %seenAttr;
 while ($ucFile =~ m/<([^>]*)>/g) {
   my $attr = $1;
   if ($attr =~ m/"(Folder|MD5|Name|UUID|Version)/) {
     my $keyword = $1;
     if (!$seenAttr{$keyword}) {
-      print("<$attr>\n");
+      print("    <$attr>\n");
     }
-    $seenAttr{$keyword} = 1;
+    $seenAttr{$keyword} = $attr;
   }
 }
+print("</node>\n");
 
+if ($seenAttr{"UUID"}) {
+  print("\n", 'For "ModOrder" Section:', "\n");
+  print('<node id="Module">', "\n");
+  print("    <", $seenAttr{"UUID"}, "\n");
+  print("</node>\n");
+}
 
 
 ###
