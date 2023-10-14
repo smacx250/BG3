@@ -73,7 +73,7 @@ if ($ver < $SUP_VER[0] || $ver > $SUP_VER[1]) {
 }
     
 # Get table offset
-my $tblOff = unpack("L", substr($fileHdr, 8, 4));
+my $tblOff = unpack("Q", substr($fileHdr, 8, 8));
 
 # Read the table header
 seek($pakFile, $tblOff, SEEK_SET);
@@ -116,7 +116,7 @@ for (my $i = 0; $i < $numFiles; $i++) {
   }
   if ($fName =~ m/meta.lsx$/) {
     $entOff += 256;
-    $fOfst = unpack("L", substr(${$tblEntsRef}, $entOff, 4));
+    $fOfst = unpack("Q", substr(${$tblEntsRef}, $entOff, 8)) & 0x00ffffffffffffff;
     $fcLen = unpack("L", substr(${$tblEntsRef}, $entOff + 8, 4));
     $fLen = unpack("L", substr(${$tblEntsRef}, $entOff + 12, 4));
     if ($debug > 2) {
@@ -152,10 +152,14 @@ if ($debug > 0) {
 
 print('For "Mods" Section:', "\n");
 print('<node id="ModuleShortDesc">', "\n");
+my $gotModInfo = 0;
 my %seenAttr;
 while ($ucFile =~ m/<([^>]*)>/g) {
   my $attr = $1;
-  if ($attr =~ m/"(Folder|MD5|Name|UUID|Version)/) {
+  if ($attr =~ m/ModuleInfo/) {
+    $gotModInfo = 1;
+  }
+  if ($gotModInfo && $attr =~ m/"(Folder|MD5|Name|UUID|Version)/) {
     my $keyword = $1;
     if (!$seenAttr{$keyword}) {
       print("    <$attr>\n");
