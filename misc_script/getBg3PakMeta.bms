@@ -37,7 +37,14 @@ for i = 0 < FILES
       print "FILE OFFSET = %OFFSET|x%"
     endif
 
-    get CMPTYPE long MEMORY_FILE
+    getdstring PAD0 3 MEMORY_FILE
+    get CMPTYPE byte MEMORY_FILE
+    math CMPTYPE & 0xf
+    if CMPTYPE == 1
+      comtype zlib
+    else
+      comtype lz4
+    endif
 
     get ZSIZE long MEMORY_FILE
     if DEBUG == 1
