@@ -190,8 +190,24 @@ sub getModSet() {
   my $gustavDev;
   while (my $line = <$setFile>) {
     push(@setLines, $line);
-    if ($line =~ m/"ModOrder"/) {
+    if ($line =~ m/"ModOrder">/) {
       $inOrder = 1;
+    }
+    # Handle empty <node id="ModOrder"/> section
+    if ($line =~ m|"ModOrder"/>|) {
+      pop(@setLines);
+      push(@setLines, qq(                <node id="ModOrder">\n));
+      push(@setLines, qq(                    <children>\n));
+      push(@setLines, qq(                    </children>\n));
+      push(@setLines, qq(                </node>));
+    }
+    # Handle empty <node id="Mods"/> section
+    if ($line =~ m|"Mods"/>|) {
+      pop(@setLines);
+      push(@setLines, qq(                <node id="Mods">\n));
+      push(@setLines, qq(                    <children>\n));
+      push(@setLines, qq(                    </children>\n));
+      push(@setLines, qq(                </node>));
     }
     if ($line =~ m|</children>|) {
       $inOrder = 0;
